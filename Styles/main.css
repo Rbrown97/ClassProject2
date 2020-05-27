@@ -1,0 +1,14 @@
+ul {
+    list-style-type: none;
+    border: 5px outset;
+    margin-right: 80%;
+    /*margin-top: 1%;*/
+}
+body {
+    display: inline;	
+}
+aside {
+    border: 5px inset;
+    margin-right: 85%;
+    margin-bottom: 1%;
+}

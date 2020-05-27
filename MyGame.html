@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Super Ultra Mega Mining Simulator 9000 Supreme</title>
+    <link rel="stylesheet" href="Styles/main.css">
+    <script type="text/javascript">
+        //Assets
+        player1Image = new Image();
+        player1Image.src = "Assets/player1.png"
+        backgroundImage = new Image();
+        backgroundImage.src = "Assets/background.png"
+        grass1Image = new Image();
+        grass1Image.src = "Assets/grass1.png"
+        dirt1Image = new Image();
+        dirt1Image.src = "Assets/dirt1.png"
+        cloudsImage = new Image();
+        cloudsImage.src = "Assets/clouds.png"
+        rock1Image = new Image();
+        rock1Image.src = "Assets/rock1.png"
+        spaceImage = new Image();
+        spaceImage.src = "Assets/space.png"
+        
+        //Tracks players position, Pos1 = Col, Pos2 = Row
+        let player1Pos1 = 0
+        let player1Pos2 = 3
+        
+        //
+        let startPos = [player1Pos1,player1Pos2]
+        let endPos = [player1Pos1,0]
+        
+        
+        
+        
+        var $ = function(id) {
+			return document.getElementById(id);
+		};
+        
+        
+        var board = new Array(30);
+        
+        
+        for(let i=0; i<30; i++){
+            //initializes the grid for the draw function to draw.
+            board[i] = new Array(17);
+            //console.log(board[i])
+            if(board.indexOf(0)<5){
+                board[i].fill(1,0,4)
+                board[i].fill(2,4,5)
+                board[i].fill(3,5,7)
+                board[i].fill(4,7,17)
+                //console.log(board[i])
+            }//else if(board[i]>4){
+                //board[i].fill(1)
+            //}
+            
+        }
+        
+    
+        //board[3][3] = player1Image;
+        
+        function getMousePosition(canvas, event) {
+            
+            let rect = canvas.getBoundingClientRect(); 
+            let x = event.clientX - rect.left; 
+            let y = event.clientY - rect.top; 
+            console.log("Coordinate x: " + x,"Coordinate y: " + y);
+          
+            let col = parseInt(x / 64);
+            let row = parseInt(y / 64);
+            console.log("column: ",col);
+            console.log("row: ",row);
+            
+            playerMine(col,row);
+        }
+        
+        
+        function player() {
+            board[player1Pos1][player1Pos2] = 0
+        }
+        
+        function playerMove(direction){
+            if(direction == "up"){
+                if(board[player1Pos1][player1Pos2-1] == 1 || board[player1Pos1][player1Pos2-1] == 5){
+                    board[player1Pos1][player1Pos2] = 5
+                    player1Pos2 -= 1
+                    board[player1Pos1][player1Pos2] = 0
+                    draw();  
+                }
+                else if(board[player1Pos1][player1Pos2-1] == 2 || board[player1Pos1][player1Pos2-1] == 3 || board[player1Pos1][player1Pos2-1] == 4){
+                    board[player1Pos1][player1Pos2] = 0
+                    draw();
+                }
+                console.log("Moving Up!");
+            }
+            else if(direction == "down"){
+                if(board[player1Pos1][player1Pos2 + 1] == 1 || board[player1Pos1][player1Pos2 + 1] == 2 || board[player1Pos1][player1Pos2 + 1] == 3 || board[player1Pos1][player1Pos2 + 1] == 4){
+                    board[player1Pos1][player1Pos2+1] = 5
+                    draw();
+                }
+                else if(board[player1Pos1][player1Pos2 + 1] == 5){
+                    board[player1Pos1][player1Pos2] = 5
+                    player1Pos2 += 1
+                    board[player1Pos1][player1Pos2] = 0
+                    draw();
+                }
+                    console.log("Moving Down!");                     
+            }
+            else if(direction == "left"){
+                if(player1Pos1 >0){
+                    board[player1Pos1][player1Pos2] = 5
+                    player1Pos1 += -1
+                    board[player1Pos1][player1Pos2] = 0
+                    draw();  
+                }
+                else{
+                    board[player1Pos1][player1Pos2] = 0
+                }                    
+                console.log("Moving left!");
+            }
+            else if(direction == "right"){
+                if(player1Pos1 < 29){
+                    board[player1Pos1][player1Pos2] = 5
+                    player1Pos1 += 1
+                    board[player1Pos1][player1Pos2] = 0
+                    draw();   
+                }
+                else{
+                    board[player1Pos1][player1Pos2] = 0
+                }
+                    console.log("Moving Right!!");                      
+            }
+            playerCheckFall();
+        }
+        
+        //Removes a block at the coordinates from getMousePosition
+        function playerMine(col,row){
+            if(board[col][row] == 2 || board[col][row] == 3)
+            board[col][row] = 5
+            draw();
+        }
+        
+        function playerCheckFall(){
+            //Checks if the block below the player is either space or sky, if so, the player moves down a block.
+            let checkFall = true;
+            let fallCounter = 0;
+            while(checkFall == true){
+                if(board[player1Pos1][player1Pos2+1] == 5 || board[player1Pos1][player1Pos2+1] == 1){
+                    board[player1Pos1][player1Pos2] = 5
+                    player1Pos2 += 1
+                    board[player1Pos1][player1Pos2] = 0
+                    fallCounter += 1
+                }
+                else if(board[player1Pos1][player1Pos2+1] != 5 || board[player1Pos1][player1Pos2+1] != 1){
+                    if(fallCounter > 3){
+                        console.log("fall damage!")
+                    }
+                    checkFall = false;
+                    
+                }
+            }
+            draw();
+        }
+        
+        function playerFall(){
+            
+        }
+                
+        
+            
+        
+        
+        function draw(){
+            var canvas = document.getElementById('miningsim');
+            if (canvas.getContext) {
+                var ctx = canvas.getContext('2d');
+                ctx.clearRect(0,0,1920,1088);
+            }
+            
+            ctx.drawImage(backgroundImage,0,0);
+            for(let col = 0; col<30;col++){
+                for(let row=0;row<17;row++){
+                    if(board[col][row] == 0){
+                        //ctx.strokeRect(col * 64, row * 64, 64, 64);
+                        ctx.drawImage(player1Image,col * 64, row * 64);
+                    }
+                    else if(board[col][row] == 1){
+                        ctx.drawImage(cloudsImage,col * 64, row * 64);
+                    }
+                    else if(board[col][row] == 2){
+                        ctx.drawImage(grass1Image,col * 64,row * 64);
+                    }
+                    else if(board[col][row] == 3){
+                        ctx.drawImage(dirt1Image,col * 64,row * 64);
+                    }
+                    else if(board[col][row] == 4){
+                        ctx.drawImage(rock1Image, col * 64, row * 64);
+                    }
+                    else if(board[col][row] == 5){
+                        ctx.drawImage(spaceImage, col * 64, row * 64);
+                    }
+                    ctx.strokeRect(col * 64, row * 64, 64, 64);
+            
+                }
+                
+                
+            }
+            
+            
+        }
+        
+        
+        window.onload = function(){
+            player();
+            draw();
+            let canvasElem = document.getElementById('miningsim');
+            
+            window.addEventListener('keyup', (e) => {
+                                    //Checks the 4 arrow keys for input. Moves the player in the direction of the relative key.
+                                    if (e.code === "ArrowUp"){
+                                        playerMove("up");
+                                    }        
+                                    else if (e.code === "ArrowDown"){
+                                        playerMove("down");
+                                    }
+                                    else if(e.code === "ArrowLeft"){
+                                        playerMove("left");
+                                    }
+                                    else if(e.code === "ArrowRight"){
+                                        playerMove("right");   
+                                    }
+            });
+            canvasElem.addEventListener("mousedown", function(evt){ 
+              getMousePosition(canvasElem, evt); 
+            });
+            
+        }
+    
+    
+    </script>
+      
+    <style type="text/css">
+      canvas { border: 1px solid black; }
+    </style>
+  </head>
+  <body>
+      <p>Inventory</p>
+      <ul>
+          <li id="invslot1"><img src="Assets/HealthPotion.png"></li>
+          <li id="invslot2"></li>
+          <li id="invslot3"></li>
+          <li id="invslot4"></li>
+          <li id="invslot5"></li>
+      </ul>
+      <p>Health</p>
+      <aside>
+        <img src="Assets/HeartContainer2.png">
+        <img src="Assets/HeartContainer2.png">
+        <img src="Assets/HeartContainer2.png">
+        <img src="Assets/HeartContainer2.png">
+        <img src="Assets/player1.gif">
+      </aside>
+      <div>
+        <canvas id="miningsim" width="1920" height="1088"></canvas>
+      </div>
+  </body>
+</html>
