@@ -20,10 +20,21 @@
         rock1Image.src = "Assets/rock1.png"
         spaceImage = new Image();
         spaceImage.src = "Assets/space.png"
+        damageSound = new Audio("Assets/Sounds/damage.wav");
+        healSound = new Audio("Assets/Sounds/heal.wav");
+        moveHorizontalSound = new Audio("Assets/Sounds/moveHorizontal.wav");
+        hitRockSound = new Audio("Assets/Sounds/hitRock.wav");
+        
+        
+        //Inventory variables
+        let player1Inventory = ["Health Potion",2,3,4];
+        let player1InventoryCount = [1,0,0,0];
+        let player1CurrentItem = 1;
+        let player1Health = 4;
         
         //Tracks players position, Pos1 = Col, Pos2 = Row
         let player1Pos1 = 0
-        let player1Pos2 = 3
+        let player1Pos2 = 5
         
         //
         let startPos = [player1Pos1,player1Pos2]
@@ -37,27 +48,52 @@
 		};
         
         
+        
         var board = new Array(30);
-        
-        
         for(let i=0; i<30; i++){
             //initializes the grid for the draw function to draw.
             board[i] = new Array(17);
             //console.log(board[i])
             if(board.indexOf(0)<5){
-                board[i].fill(1,0,4)
-                board[i].fill(2,4,5)
-                board[i].fill(3,5,7)
-                board[i].fill(4,7,17)
+                board[i].fill(5,0,6)
+                board[i].fill(2,6,7)
+                board[i].fill(3,7,8)
+                board[i].fill(4,8,17)
                 //console.log(board[i])
             }//else if(board[i]>4){
                 //board[i].fill(1)
-            //}
-            
+            //}  
         }
         
     
         //board[3][3] = player1Image;
+        
+        //Changes the current item selected in the inventory.
+        function inventory(key) {
+            if(key == "1"){
+                player1CurrentItem = 0;
+                usePotion();
+            }else if(key == "2"){
+                player1CurrentItem = 1;
+            }else if(key == "3"){
+                player1CurrentItem = 2;
+            }else if(key == "4"){
+                player1CurrentItem = 3;
+            }
+            console.log("Current slot selected: "+player1CurrentItem)
+        }
+        
+        function usePotion(){
+            if(player1InventoryCount[0] > 0){
+                player1Health = 4;
+                player1InventoryCount[0] -= 1;
+                $("invslot1").innerHTML = "<img src=\"Assets/EmptyHealthPotion.png\">";
+                takeDamage();
+                console.log("Current HP: "+player1Health)
+            }
+        }
+        
+        
         
         function getMousePosition(canvas, event) {
             
@@ -71,13 +107,33 @@
             console.log("column: ",col);
             console.log("row: ",row);
             
-            playerMine(col,row);
+            if(event.button == 0){
+                playerMine(col,row);
+            }
+            else if(event.button == 2){
+                playerBuild(col,row);
+            }
+            
+        }
+        
+        function takeDamage(){
+            if(player1Health == 4){
+                $("healthbar").innerHTML = "<img src=\"Assets/4Health.png\">"
+                healSound.play();
+            }else if(player1Health == 3){
+                $("healthbar").innerHTML = "<img src=\"Assets/3Health.png\">"
+            }else if(player1Health == 2){
+                $("healthbar").innerHTML = "<img src=\"Assets/2Health.png\">"
+            }else if(player1Health == 1){
+                $("healthbar").innerHTML = "<img src=\"Assets/1Health.png\">"
+            }else if(player1Health == 0){
+                $("healthbar").innerHTML = "<img src=\"Assets/0Health.png\">"
+                //Run Game Over Here
+            }
         }
         
         
-        function player() {
-            board[player1Pos1][player1Pos2] = 0
-        }
+        
         
         function playerMove(direction){
             if(direction == "up"){
@@ -94,11 +150,13 @@
                 console.log("Moving Up!");
             }
             else if(direction == "down"){
-                if(board[player1Pos1][player1Pos2 + 1] == 1 || board[player1Pos1][player1Pos2 + 1] == 2 || board[player1Pos1][player1Pos2 + 1] == 3 || board[player1Pos1][player1Pos2 + 1] == 4){
+                if(board[player1Pos1][player1Pos2 + 1] == 1 || board[player1Pos1][player1Pos2 + 1] == 5){
+                    //Doesnt Move
                     board[player1Pos1][player1Pos2+1] = 5
                     draw();
                 }
                 else if(board[player1Pos1][player1Pos2 + 1] == 5){
+                    //Moves Down
                     board[player1Pos1][player1Pos2] = 5
                     player1Pos2 += 1
                     board[player1Pos1][player1Pos2] = 0
@@ -107,25 +165,46 @@
                     console.log("Moving Down!");                     
             }
             else if(direction == "left"){
-                if(player1Pos1 >0){
-                    board[player1Pos1][player1Pos2] = 5
-                    player1Pos1 += -1
-                    board[player1Pos1][player1Pos2] = 0
+                if(player1Pos1 > 0 && board[player1Pos1-1][player1Pos2] == 5){
+                    //Moves Left
+                    board[player1Pos1][player1Pos2] = 5;
+                    player1Pos1 += -1;
+                    board[player1Pos1][player1Pos2] = 0;
+                    moveHorizontalSound.play();
                     draw();  
-                }
-                else{
-                    board[player1Pos1][player1Pos2] = 0
+                }else if(player1Pos1 > 0 && board[player1Pos1-1][player1Pos2-1] == 5){
+                    //Moves Left and Down
+                    console.log("Col: "+player1Pos1+" Row: "+player1Pos2)
+                    board[player1Pos1][player1Pos2] = 5;
+                    player1Pos1 -= 1;
+                    player1Pos2 -= 1;
+                    board[player1Pos1][player1Pos2] = 0;
+                    console.log("Col: "+player1Pos1+" Row: "+player1Pos2)
+                    moveHorizontalSound.play();
+                    draw();
+                    
+                }else{
+                    board[player1Pos1][player1Pos2] = 0;
                 }                    
                 console.log("Moving left!");
             }
             else if(direction == "right"){
-                if(player1Pos1 < 29){
+                if(player1Pos1 < 29 && board[player1Pos1+1][player1Pos2] == 5 || player1Pos1 < 29 && board[player1Pos1+1][player1Pos2] == 1){
+                    //Moves Right
                     board[player1Pos1][player1Pos2] = 5
                     player1Pos1 += 1
                     board[player1Pos1][player1Pos2] = 0
+                    moveHorizontalSound.play();
                     draw();   
-                }
-                else{
+                }else if(player1Pos1 < 29 && board[player1Pos1+1][player1Pos2-1] == 5 || player1Pos1 < 29 && board[player1Pos1+1][player1Pos2-1] == 1){
+                    //Moves Right and Down
+                    board[player1Pos1][player1Pos2] = 5
+                    player1Pos1 += 1
+                    player1Pos2 -= 1
+                    board[player1Pos1][player1Pos2] = 0
+                    moveHorizontalSound.play();
+                    draw();   
+                }else{
                     board[player1Pos1][player1Pos2] = 0
                 }
                     console.log("Moving Right!!");                      
@@ -133,11 +212,37 @@
             playerCheckFall();
         }
         
-        //Removes a block at the coordinates from getMousePosition
+        //Removes a block at the coordinates from getMousePosition. Adds the block to the inventory.
         function playerMine(col,row){
-            if(board[col][row] == 2 || board[col][row] == 3)
+            if(board[col][row] == 2 || board[col][row] == 3 || board[col][row] == 4)
+                if(board[col][row] == 2){
+                    player1InventoryCount[1] += 1
+                }else if(board[col][row] == 3){
+                    player1InventoryCount[2] += 1
+                }else if(board[col][row] == 4){
+                    player1InventoryCount[3] += 1
+                    hitRockSound.play();
+                }
             board[col][row] = 5
+            $("invslot2Count").innerHTML = player1InventoryCount[1];
+            $("invslot3Count").innerHTML = player1InventoryCount[2];
+            $("invslot4Count").innerHTML = player1InventoryCount[3];
             draw();
+        }
+        
+        //Places a block at the cursor location and removes the block from the inventory.
+        function playerBuild(col,row){
+            if(board[col][row] == 1 || board[col][row] == 5){
+                if(player1InventoryCount[player1CurrentItem] > 0){
+                    player1InventoryCount[player1CurrentItem] -= 1;
+                    board[col][row] = player1Inventory[player1CurrentItem]
+                    console.log("count"+player1InventoryCount[player1CurrentItem])
+                }
+                $("invslot2Count").innerHTML = player1InventoryCount[1];
+                $("invslot3Count").innerHTML = player1InventoryCount[2];
+                $("invslot4Count").innerHTML = player1InventoryCount[3];
+                draw();
+            }
         }
         
         function playerCheckFall(){
@@ -153,7 +258,10 @@
                 }
                 else if(board[player1Pos1][player1Pos2+1] != 5 || board[player1Pos1][player1Pos2+1] != 1){
                     if(fallCounter > 3){
-                        console.log("fall damage!")
+                        console.log("fall damage!");
+                        player1Health -= 1;
+                        damageSound.play();
+                        takeDamage();
                     }
                     checkFall = false;
                     
@@ -161,11 +269,7 @@
             }
             draw();
         }
-        
-        function playerFall(){
-            
-        }
-                
+             
         
             
         
@@ -199,19 +303,15 @@
                     else if(board[col][row] == 5){
                         ctx.drawImage(spaceImage, col * 64, row * 64);
                     }
-                    ctx.strokeRect(col * 64, row * 64, 64, 64);
+                    //ctx.strokeRect(col * 64, row * 64, 64, 64);
             
-                }
-                
-                
+                } 
             }
-            
-            
         }
         
-        
+
         window.onload = function(){
-            player();
+            board[player1Pos1][player1Pos2] = 0
             draw();
             let canvasElem = document.getElementById('miningsim');
             
@@ -228,15 +328,23 @@
                                     }
                                     else if(e.code === "ArrowRight"){
                                         playerMove("right");   
+                                    }else if(e.key === "1"){
+                                        inventory("1");
+                                    }else if(e.key === "2"){
+                                        inventory("2");
+                                    }else if(e.key === "3"){
+                                        inventory("3");
+                                    }else if(e.key === "4"){
+                                        inventory("4");
                                     }
             });
-            canvasElem.addEventListener("mousedown", function(evt){ 
-              getMousePosition(canvasElem, evt); 
-            });
             
+            
+            canvasElem.addEventListener("mouseup", function(evt){
+                getMousePosition(canvasElem, evt); 
+            });
+              
         }
-    
-    
     </script>
       
     <style type="text/css">
@@ -247,21 +355,23 @@
       <p>Inventory</p>
       <ul>
           <li id="invslot1"><img src="Assets/HealthPotion.png"></li>
-          <li id="invslot2"></li>
-          <li id="invslot3"></li>
-          <li id="invslot4"></li>
-          <li id="invslot5"></li>
+          <li id="invslot2"><img src="Assets/grass1.png"></li>
+          <li id="invslot2Count"></li>
+          <li id="invslot3"><img src="Assets/dirt1.png"></li>
+          <li  id="invslot3Count"></li>
+          <li id="invslot4"><img src="Assets/rock1.png"></li>
+          <li  id="invslot4Count"></li>
+          <li id="invslot5"><img src="Assets/space.png"></li>
       </ul>
       <p>Health</p>
+      <ul>
+          <li id="healthbar"><img src="Assets/4Health.png"></li>
+      </ul>
       <aside>
-        <img src="Assets/HeartContainer2.png">
-        <img src="Assets/HeartContainer2.png">
-        <img src="Assets/HeartContainer2.png">
-        <img src="Assets/HeartContainer2.png">
-        <img src="Assets/player1.gif">
+          <p>Controls: ← ↑ → ↓</p>
       </aside>
       <div>
-        <canvas id="miningsim" width="1920" height="1088"></canvas>
+        <canvas id="miningsim" width="1920" height="1088" oncontextmenu="return false;"></canvas>
       </div>
   </body>
 </html>
