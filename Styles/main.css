@@ -1,21 +1,29 @@
 ul {
     list-style-type: none;
     border: 5px outset;
-    margin-right: 80%;
+    margin-right: 0%;
     padding-left: 0;
     padding-right: 0%;
-    
+    /*display: inline-block;*/ 
 }
+
 ul, li{
-    display: inline-block;
-    
-    
+    display: inline;
 }
-body {
-    display: inline;	
-}
+
 aside {
     border: 5px inset;
-    margin-right: 85%;
+    margin-right: 65%;
     margin-bottom: 1%;
+}
+
+.flex-container {
+    display: flex;
+    flex-direction: row;
+
+}
+p {
+    display: inline;
+    margin-right: 8%;
+    margin-left: 3%;
 }
